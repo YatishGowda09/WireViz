@@ -179,7 +179,7 @@ The differences in visual clarity, wire routing, and system comprehension are pr
 
 ### 1. Before: Original WireViz Unmodularized Representation
 
-**Source Input:** [`examples/demo-sharan.yml`](examples/demo-sharan.yml) (rendered without the `groups:` container)
+**Source Input:** [`examples/demo-arduino-old-syntax.yml`](examples/demo-arduino-old-syntax.yml) (rendered without the `groups:` container)
 
 In the unmodularized codebase, WireViz operates with a flat, 1-level topology where every connector and component is treated as an isolated, floating island:
 
@@ -195,13 +195,13 @@ In the unmodularized codebase, WireViz operates with a flat, 1-level topology wh
 
 ### 2. After: Our Modular Enclosure Model
 
-**Source Input:** [`examples/arduino_demo.yml`](examples/arduino_demo.yml) (and updated [`examples/demo-sharan.yml`](examples/demo-sharan.yml) with native `groups:`)
+**Source Input:** [`examples/arduino_demo.yml`](examples/arduino_demo.yml) (and updated [`examples/demo-arduino-old-syntax.yml`](examples/demo-arduino-old-syntax.yml) with native `groups:`)
 
 Using our new first-class modular grouping architecture, the exact same circuit is rendered with structured physical boundaries and clear signal hierarchy:
 
 ![Our Modular Enclosure Model Output](docs/images/after_grouping_modularized.png)
 
-> **Note on the YAML Inputs:** Both files model the **exact same electrical circuit** (Arduino Uno driving an HD44780 LCD display with 10K contrast adjustment and 5V/GND rails). In the unmodularized original (`demo-sharan.yml` without groups), WireViz forced the user to declare every connector and component as an anonymous peer (`X1`, `X2`, `X3`, `X4`), creating six fragmented cable segments. In our modular model (`arduino_demo.yml`), the user can cleanly define parent enclosures (`groups:`) to unify multi-header boards and consolidate connections into organized, logical cable channels.
+> **Note on the YAML Inputs:** Both files model the **exact same electrical circuit** (Arduino Uno driving an HD44780 LCD display with 10K contrast adjustment and 5V/GND rails). In the unmodularized original (`demo-arduino-old-syntax.yml` without groups), WireViz forced the user to declare every connector and component as an anonymous peer (`X1`, `X2`, `X3`, `X4`), creating six fragmented cable segments. In our modular model (`arduino_demo.yml`), the user can cleanly define parent enclosures (`groups:`) to unify multi-header boards and consolidate connections into organized, logical cable channels.
 
 #### Key Architectural & Visual Advancements:
 - **Cohesive Physical Enclosures:** The microcontroller is encapsulated inside an authentic teal dashed container (**Arduino Uno R3**), cleanly housing both its dedicated Power Rail (`Arduino_Power`) and its GPIO Header (`Arduino_Digital`). The display is encapsulated inside its own industrial blue enclosure (**LCD 1602 Display Module**).
@@ -338,9 +338,9 @@ This compiles `examples/arduino_demo.yml` and outputs:
 
 ### The Discovery: The "Spiderweb" Wire Phenomenon
 
-When visual grouping is introduced, Graphviz constrains nodes inside `subgraph cluster_*` bounding boxes. While this solves the physical packaging visualization, it places strict spatial boundaries on the layout engine. During testing on real-world circuits (`demo-sharan` with an LCD subassembly and `demo-7` with an ESP32 IoT node), we observed four distinct failure patterns:
+When visual grouping is introduced, Graphviz constrains nodes inside `subgraph cluster_*` bounding boxes. While this solves the physical packaging visualization, it places strict spatial boundaries on the layout engine. During testing on real-world circuits (`demo-arduino-old-syntax` with an LCD subassembly and `demo-7` with an ESP32 IoT node), we observed four distinct failure patterns:
 
-1. **Connector Pin Pinch Points:** In `demo-sharan`, multiple incoming cables from the Arduino and local connections from the potentiometer converged onto the same 16-pin LCD header (`X2`), creating an unreadable knot of bezier splines bunched at the connector face.
+1. **Connector Pin Pinch Points:** In `demo-arduino-old-syntax`, multiple incoming cables from the Arduino and local connections from the potentiometer converged onto the same 16-pin LCD header (`X2`), creating an unreadable knot of bezier splines bunched at the connector face.
 2. **Spline Inversion Crossings:** When cable pin definitions were not ordered monotonically relative to connector pin positions, Graphviz routed upper cable wires to lower connector pins and lower cable wires to upper pins, causing conductor lines to cross over each other repeatedly.
 3. **Vertical Ballooning from Unused Pins:** Displaying full 16-pin headers when only a subset of pins were used created tall tables, forcing wire splines to stretch across wide vertical angles and collide with adjacent cables.
 4. **Long Ground & Power Loops:** Routing ground and 5V lines individually across the entire diagram to every subassembly component produced cluttered parallel tracks that overwhelmed the signal wiring.
@@ -382,7 +382,7 @@ This keeps internal grounding and common rail distribution completely local to t
 By enabling `hide_disconnected_pins: true` on multi-pin headers, WireViz automatically collapses unpopulated pins. This dramatically reduces the vertical height of connector nodes, bringing active pin rows into direct horizontal line-of-sight with incoming cables and preventing wide vertical spline deflections.
 
 #### 4. Port Face Segregation & Flow Decoupling
-In `demo-sharan`, the LCD display receives power and data from the Arduino on its left face, while connecting to its backlight resistor (`X4`) from its right face. By structuring connections so that downstream subassemblies flow naturally from left to right across connector ports, wire traffic is split across opposite faces instead of colliding into a single pinch point.
+In `demo-arduino-old-syntax`, the LCD display receives power and data from the Arduino on its left face, while connecting to its backlight resistor (`X4`) from its right face. By structuring connections so that downstream subassemblies flow naturally from left to right across connector ports, wire traffic is split across opposite faces instead of colliding into a single pinch point.
 
 ---
 
@@ -447,7 +447,7 @@ By the time we resurfaced, we had a solid mental model of the entire system and 
 
 With a clear plan in place, we pushed forward into full implementation — defining the `Group` data model, writing the YAML parser extensions, and modifying the graph construction logic to wrap grouped connectors inside Graphviz cluster subgraphs.
 
-However, as soon as we tested our implementation against complex, multi-component real-world harnesses (an Arduino UNO + 16-pin LCD Display subassembly in `demo-sharan`, and an ESP32 IoT node with sensors and actuators in `demo-7`), we discovered a critical visual layout challenge: **wire clustering and severe edge crossing**. 
+However, as soon as we tested our implementation against complex, multi-component real-world harnesses (an Arduino UNO + 16-pin LCD Display subassembly in `demo-arduino-old-syntax`, and an ESP32 IoT node with sensors and actuators in `demo-7`), we discovered a critical visual layout challenge: **wire clustering and severe edge crossing**. 
 
 While the connectors were neatly enclosed in group boxes, the wires connecting between the controllers and the clustered subassemblies became a tangled spiderweb. Pin pinch points appeared at connector ports, lines crossed each other repeatedly, and the diagram became harder to read than before. We spent significant time analyzing the Graphviz layout engine mechanics, diagnosing the root causes, and developing ergonomic harness layout techniques to eliminate the clutter entirely.
 
