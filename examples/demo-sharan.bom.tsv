@@ -3,7 +3,6 @@
 2	1		Connector, LCD Densitron LWM1604A, female, 16 pins	X2
 3	1		Connector, Potentiometer 10K, female, 3 pins	X3
 4	1		Connector, Resistor 12 Ohm, axial, 2 pins	X4
-5	3	m	Cable, 1 x 0.25 mm²	W_CONTRAST, W_RES_IN, W_RES_OUT
-6	1	m	Cable, 2 x 0.25 mm²	W_POT_PWR
-7	1	m	Cable, 6 x 0.25 mm²	W1
-8	1	m	Cable, 8 x 0.25 mm²	W2
+5	1	m	Cable, 2 x 0.25 mm²	W_BL
+6	1	m	Cable, 3 x 0.25 mm²	W_POT
+7	1	m	Cable, 8 x 0.25 mm²	W_MAIN

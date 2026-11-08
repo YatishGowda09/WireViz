@@ -1,6 +1,6 @@
 metadata:
   title: "Arduino Uno to HD44780 LCD Display"
-  description: "4-bit LCD interface with 10k contrast potentiometer and 12-ohm backlight resistor"
+  description: "Clean 8-wire harness with local display contrast and backlight circuit"
 
 connectors:
   X1:
@@ -12,6 +12,9 @@ connectors:
     type: LCD Densitron LWM1604A
     subtype: female
     pinlabels: [0V, 5V, V0_contrast, RS, R_W, E, DB0, DB1, DB2, DB3, DB4, DB5, DB6, DB7, Led+, Led-]
+    loops:
+      - [1, 5]   # Tie R/W to 0V (GND) for write-only mode
+      - [1, 16]  # Tie Backlight Cathode (Led-) to 0V (GND)
 
   X3:
     type: Potentiometer 10K
@@ -24,81 +27,46 @@ connectors:
     pinlabels: [5V_IN, LED_OUT]
 
 cables:
-  W1:
-    gauge: 0.25 mm2
-    length: 0.2
-    color_code: DIN
-    wirecount: 6
-
-  W2:
+  W_MAIN:
     gauge: 0.25 mm2
     length: 0.2
     color_code: DIN
     wirecount: 8
+    colors: [RD, BK, WH, BN, GN, YE, GY, PK]
 
-  W_POT_PWR:
+  W_POT:
     gauge: 0.25 mm2
-    length: 0.15
+    length: 0.05
+    color_code: DIN
+    wirecount: 3
+    colors: [BK, BU, RD]
+
+  W_BL:
+    gauge: 0.25 mm2
+    length: 0.05
     color_code: DIN
     wirecount: 2
-
-  W_CONTRAST:
-    gauge: 0.25 mm2
-    length: 0.15
-    color_code: DIN
-    wirecount: 1
-    colors: [YE]
-
-  W_RES_IN:
-    gauge: 0.25 mm2
-    length: 0.10
-    color_code: DIN
-    wirecount: 1
-    colors: [RD]
-
-  W_RES_OUT:
-    gauge: 0.25 mm2
-    length: 0.10
-    color_code: DIN
-    wirecount: 1
-    colors: [RD]
+    colors: [RD, RD]
 
 connections:
-  # 4-bit bus: D2->RS, D3->E, D4..D7 -> DB4..DB7
+  # 1. Main 8-wire harness between Arduino Uno and LCD Display
+  # 5V->5V, GND->0V, D2->RS, D3->E, D4..D7 -> DB4..DB7
   -
-    - X1: [3, 4, 5, 6, 7, 8]
-    - W1: [1, 2, 3, 4, 5, 6]
-    - X2: [4, 6, 11, 12, 13, 14]
+    - X1: [1, 2, 3, 4, 5, 6, 7, 8]
+    - W_MAIN: [1, 2, 3, 4, 5, 6, 7, 8]
+    - X2: [2, 1, 4, 6, 11, 12, 13, 14]
 
-  # Power, Ground, and Grounded Inputs (R/W, DB0-DB3, Backlight Cathode)
+  # 2. Local Contrast Potentiometer (GND, Wiper/V0, 5V)
   -
-    - X1: [2, 1, 2, 2, 2, 2, 2, 2]
-    - W2: [1, 2, 3, 4, 5, 6, 7, 8]
-    - X2: [1, 2, 5, 7, 8, 9, 10, 16]
+    - X3: [1, 2, 3]
+    - W_POT: [1, 2, 3]
+    - X2: [1, 3, 2]
 
-  # Potentiometer 5V & GND feed
+  # 3. Local Backlight Resistor (5V -> Resistor -> Backlight Anode)
   -
-    - X1: [2, 1]
-    - W_POT_PWR: [1, 2]
-    - X3: [1, 3]
-
-  # Contrast Wiper to LCD V0
-  -
-    - X3: 2
-    - W_CONTRAST: 1
-    - X2: 3
-
-  # Arduino 5V to Resistor
-  -
-    - X1: 1
-    - W_RES_IN: 1
-    - X4: 1
-
-  # Resistor to Backlight Anode
-  -
-    - X4: 2
-    - W_RES_OUT: 1
-    - X2: 15
+    - X2: [2, 15]
+    - W_BL: [1, 2]
+    - X4: [1, 2]
 
 groups:
   arduino_controller:
@@ -113,4 +81,4 @@ groups:
     style: dashed
     color: "#336699"
     bgcolor: "#F4F7F9"
-    members: [X2, X3, X4, W_CONTRAST, W_RES_OUT]
+    members: [X2, X3, X4, W_POT, W_BL]
