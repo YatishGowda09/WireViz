@@ -1,17 +1,18 @@
 metadata:
   title: "Arduino Uno to HD44780 LCD Display"
-  description: "Clean 8-wire harness with local display contrast and backlight circuit"
+  description: "Optimized non-crossing wiring harness with right-side subassembly controls"
 
 connectors:
   X1:
     type: Arduino UNO
     subtype: female
-    pinlabels: [5V, GND, D2, D3, D4, D5, D6, D7]
+    pinlabels: [GND, 5V, D2, D3, D4, D5, D6, D7]
 
   X2:
     type: LCD Densitron LWM1604A
     subtype: female
     pinlabels: [0V, 5V, V0_contrast, RS, R_W, E, DB0, DB1, DB2, DB3, DB4, DB5, DB6, DB7, Led+, Led-]
+    hide_disconnected_pins: true
     loops:
       - [1, 5]   # Tie R/W to 0V (GND) for write-only mode
       - [1, 16]  # Tie Backlight Cathode (Led-) to 0V (GND)
@@ -32,7 +33,7 @@ cables:
     length: 0.2
     color_code: DIN
     wirecount: 8
-    colors: [RD, BK, WH, BN, GN, YE, GY, PK]
+    colors: [BK, RD, WH, BN, GN, YE, GY, PK]
 
   W_POT:
     gauge: 0.25 mm2
@@ -49,20 +50,24 @@ cables:
     colors: [RD, RD]
 
 connections:
-  # 1. Main 8-wire harness between Arduino Uno and LCD Display
-  # 5V->5V, GND->0V, D2->RS, D3->E, D4..D7 -> DB4..DB7
+  # 1. Main 8-wire harness entering X2 from the LEFT
+  # All wires parallel, strictly monotonic pin order:
+  # Arduino: [GND, 5V, D2, D3, D4,  D5,  D6,  D7]
+  # LCD:     [0V,  5V, RS, E,  DB4, DB5, DB6, DB7]
   -
     - X1: [1, 2, 3, 4, 5, 6, 7, 8]
     - W_MAIN: [1, 2, 3, 4, 5, 6, 7, 8]
-    - X2: [2, 1, 4, 6, 11, 12, 13, 14]
+    - X2: [1, 2, 4, 6, 11, 12, 13, 14]
 
-  # 2. Local Contrast Potentiometer (GND, Wiper/V0, 5V)
+  # 2. Local Contrast Potentiometer exiting X2 from the RIGHT
+  # LCD: [0V, V0_contrast, 5V] -> Pot: [GND, Wiper, 5V]
   -
-    - X3: [1, 2, 3]
-    - W_POT: [1, 2, 3]
     - X2: [1, 3, 2]
+    - W_POT: [1, 2, 3]
+    - X3: [1, 2, 3]
 
-  # 3. Local Backlight Resistor (5V -> Resistor -> Backlight Anode)
+  # 3. Local Backlight Resistor exiting X2 from the RIGHT
+  # LCD: [5V, Led+] -> Resistor: [5V_IN, LED_OUT]
   -
     - X2: [2, 15]
     - W_BL: [1, 2]
