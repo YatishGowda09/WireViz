@@ -99,3 +99,18 @@ connections:
     - X4: 2
     - W_RES_OUT: 1
     - X2: 15
+
+groups:
+  arduino_controller:
+    label: "Arduino Uno Controller"
+    style: solid
+    color: "#00878F"
+    bgcolor: "#EBF6F7"
+    members: [X1]
+
+  display_subassembly:
+    label: "LCD Display & Control Subassembly"
+    style: dashed
+    color: "#336699"
+    bgcolor: "#F4F7F9"
+    members: [X2, X3, X4, W_CONTRAST, W_RES_OUT]

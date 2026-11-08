@@ -4,7 +4,9 @@ graph {
 	graph [bgcolor="#FFFFFF" fontname=arial nodesep=0.33 rankdir=LR ranksep=2]
 	node [fillcolor="#FFFFFF" fontname=arial height=0 margin=0 shape=none style=filled width=0]
 	edge [fontname=arial style=bold]
-	X1 [label=<
+	subgraph cluster_arduino_controller {
+		bgcolor="#EBF6F7" color="#00878F" fontname=arial label="Arduino Uno Controller" style=solid
+		X1 [label=<
 <table border="0" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF">
  <tr>
   <td>
@@ -66,7 +68,10 @@ graph {
  </tr>
 </table>
 > shape=box style=filled]
-	X2 [label=<
+	}
+	subgraph cluster_display_subassembly {
+		bgcolor="#F4F7F9" color="#336699" fontname=arial label="LCD Display & Control Subassembly" style=dashed
+		X2 [label=<
 <table border="0" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF">
  <tr>
   <td>
@@ -160,7 +165,7 @@ graph {
  </tr>
 </table>
 > shape=box style=filled]
-	X3 [label=<
+		X3 [label=<
 <table border="0" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF">
  <tr>
   <td>
@@ -205,7 +210,7 @@ graph {
  </tr>
 </table>
 > shape=box style=filled]
-	X4 [label=<
+		X4 [label=<
 <table border="0" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF">
  <tr>
   <td>
@@ -245,6 +250,123 @@ graph {
  </tr>
 </table>
 > shape=box style=filled]
+		W_CONTRAST [label=<
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF">
+ <tr>
+  <td>
+   <table border="0" cellborder="1" cellpadding="3" cellspacing="0">
+    <tr>
+     <td>W_CONTRAST</td>
+    </tr>
+   </table>
+  </td>
+ </tr>
+ <tr>
+  <td>
+   <table border="0" cellborder="1" cellpadding="3" cellspacing="0">
+    <tr>
+     <td>1x</td>
+     <td>0.25 mm²</td>
+     <td>0.15 m</td>
+    </tr>
+   </table>
+  </td>
+ </tr>
+ <tr>
+  <td>
+   <table border="0" cellborder="0" cellspacing="0">
+    <tr>
+     <td>&nbsp;</td>
+    </tr>
+    <tr>
+     <td align="left"> X3:2:Wiper</td>
+     <td> </td>
+     <td>1:YE</td>
+     <td> </td>
+     <td align="right">X2:3:V0_contrast </td>
+    </tr>
+    <tr>
+     <td border="0" cellspacing="0" cellpadding="0" colspan="5" height="6" port="w1">
+      <table border="0" cellborder="0" cellspacing="0">
+       <tr>
+        <td bgcolor="#000000" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#FFFF00" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#000000" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+      </table>
+     </td>
+    </tr>
+    <tr>
+     <td>&nbsp;</td>
+    </tr>
+   </table>
+  </td>
+ </tr>
+</table>
+> shape=box style=filled]
+		W_RES_OUT [label=<
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF">
+ <tr>
+  <td>
+   <table border="0" cellborder="1" cellpadding="3" cellspacing="0">
+    <tr>
+     <td>W_RES_OUT</td>
+    </tr>
+   </table>
+  </td>
+ </tr>
+ <tr>
+  <td>
+   <table border="0" cellborder="1" cellpadding="3" cellspacing="0">
+    <tr>
+     <td>1x</td>
+     <td>0.25 mm²</td>
+     <td>0.1 m</td>
+    </tr>
+   </table>
+  </td>
+ </tr>
+ <tr>
+  <td>
+   <table border="0" cellborder="0" cellspacing="0">
+    <tr>
+     <td>&nbsp;</td>
+    </tr>
+    <tr>
+     <td align="left"> X4:2:LED_OUT</td>
+     <td> </td>
+     <td>1:RD</td>
+     <td> </td>
+     <td align="right">X2:15:Led+ </td>
+    </tr>
+    <tr>
+     <td border="0" cellspacing="0" cellpadding="0" colspan="5" height="6" port="w1">
+      <table border="0" cellborder="0" cellspacing="0">
+       <tr>
+        <td bgcolor="#000000" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#FF0000" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#000000" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+      </table>
+     </td>
+    </tr>
+    <tr>
+     <td>&nbsp;</td>
+    </tr>
+   </table>
+  </td>
+ </tr>
+</table>
+> shape=box style=filled]
+	}
 	W1 [label=<
 <table border="0" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF">
  <tr>
@@ -753,64 +875,6 @@ graph {
 	edge [color="#000000:#895956:#000000"]
 	X1:p1r:e -- W_POT_PWR:w2:w
 	W_POT_PWR:w2:e -- X3:p3l:w
-	W_CONTRAST [label=<
-<table border="0" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF">
- <tr>
-  <td>
-   <table border="0" cellborder="1" cellpadding="3" cellspacing="0">
-    <tr>
-     <td>W_CONTRAST</td>
-    </tr>
-   </table>
-  </td>
- </tr>
- <tr>
-  <td>
-   <table border="0" cellborder="1" cellpadding="3" cellspacing="0">
-    <tr>
-     <td>1x</td>
-     <td>0.25 mm²</td>
-     <td>0.15 m</td>
-    </tr>
-   </table>
-  </td>
- </tr>
- <tr>
-  <td>
-   <table border="0" cellborder="0" cellspacing="0">
-    <tr>
-     <td>&nbsp;</td>
-    </tr>
-    <tr>
-     <td align="left"> X3:2:Wiper</td>
-     <td> </td>
-     <td>1:YE</td>
-     <td> </td>
-     <td align="right">X2:3:V0_contrast </td>
-    </tr>
-    <tr>
-     <td border="0" cellspacing="0" cellpadding="0" colspan="5" height="6" port="w1">
-      <table border="0" cellborder="0" cellspacing="0">
-       <tr>
-        <td bgcolor="#000000" border="0" cellpadding="0" colspan="5" height="2"></td>
-       </tr>
-       <tr>
-        <td bgcolor="#FFFF00" border="0" cellpadding="0" colspan="5" height="2"></td>
-       </tr>
-       <tr>
-        <td bgcolor="#000000" border="0" cellpadding="0" colspan="5" height="2"></td>
-       </tr>
-      </table>
-     </td>
-    </tr>
-    <tr>
-     <td>&nbsp;</td>
-    </tr>
-   </table>
-  </td>
- </tr>
-</table>
-> shape=box style=filled]
 	edge [color="#000000:#FFFF00:#000000"]
 	X3:p2r:e -- W_CONTRAST:w1:w
 	W_CONTRAST:w1:e -- X2:p3l:w
@@ -875,64 +939,6 @@ graph {
 	edge [color="#000000:#FF0000:#000000"]
 	X1:p1r:e -- W_RES_IN:w1:w
 	W_RES_IN:w1:e -- X4:p1l:w
-	W_RES_OUT [label=<
-<table border="0" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF">
- <tr>
-  <td>
-   <table border="0" cellborder="1" cellpadding="3" cellspacing="0">
-    <tr>
-     <td>W_RES_OUT</td>
-    </tr>
-   </table>
-  </td>
- </tr>
- <tr>
-  <td>
-   <table border="0" cellborder="1" cellpadding="3" cellspacing="0">
-    <tr>
-     <td>1x</td>
-     <td>0.25 mm²</td>
-     <td>0.1 m</td>
-    </tr>
-   </table>
-  </td>
- </tr>
- <tr>
-  <td>
-   <table border="0" cellborder="0" cellspacing="0">
-    <tr>
-     <td>&nbsp;</td>
-    </tr>
-    <tr>
-     <td align="left"> X4:2:LED_OUT</td>
-     <td> </td>
-     <td>1:RD</td>
-     <td> </td>
-     <td align="right">X2:15:Led+ </td>
-    </tr>
-    <tr>
-     <td border="0" cellspacing="0" cellpadding="0" colspan="5" height="6" port="w1">
-      <table border="0" cellborder="0" cellspacing="0">
-       <tr>
-        <td bgcolor="#000000" border="0" cellpadding="0" colspan="5" height="2"></td>
-       </tr>
-       <tr>
-        <td bgcolor="#FF0000" border="0" cellpadding="0" colspan="5" height="2"></td>
-       </tr>
-       <tr>
-        <td bgcolor="#000000" border="0" cellpadding="0" colspan="5" height="2"></td>
-       </tr>
-      </table>
-     </td>
-    </tr>
-    <tr>
-     <td>&nbsp;</td>
-    </tr>
-   </table>
-  </td>
- </tr>
-</table>
-> shape=box style=filled]
 	edge [color="#000000:#FF0000:#000000"]
 	X4:p2r:e -- W_RES_OUT:w1:w
 	W_RES_OUT:w1:e -- X2:p15l:w
