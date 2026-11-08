@@ -4,7 +4,7 @@
 **Repository:** [wireviz/WireViz](https://github.com/wireviz/WireViz)  
 **Issue:** [#478 — How to create boxes to group connectors](https://github.com/wireviz/WireViz/issues/478)  
 **Fork:** [YatishGowda09/WireViz](https://github.com/YatishGowda09/WireViz)  
-**Branch:** `feature/issue-478-connector-grouping` (based on `dev`)
+**Branch:** `main` (based on `dev`)
 
 ---
 
@@ -43,9 +43,13 @@ Over the next hour, we methodically:
 
 By the time we resurfaced, we had a working mental model of the entire system and a concrete implementation plan.
 
-### Round 2 and Beyond
+### Round 2 and Beyond: Implementation and The Wire Cluttering Bug
 
-Round 2 evaluation was postponed due to time constraints. Rather than wait, we pushed forward into implementation — defining the data model, writing the YAML parser extensions, and modifying the graph construction logic to wrap grouped connectors inside Graphviz cluster subgraphs.
+Round 2 evaluation was postponed due to time constraints. Rather than wait, we pushed forward into full implementation — defining the `Group` data model, writing the YAML parser extensions, and modifying the graph construction logic to wrap grouped connectors inside Graphviz cluster subgraphs.
+
+However, as soon as we tested our implementation against complex, multi-component real-world harnesses (an Arduino UNO + 16-pin LCD Display subassembly in `demo-sharan`, and an ESP32 IoT node with sensors and actuators in `demo-7`), we discovered a critical visual layout challenge: **wire clustering and severe edge crossing**. 
+
+While the connectors were neatly enclosed in group boxes, the wires connecting between the controllers and the clustered subassemblies became a tangled spiderweb. Pin pinch points appeared at connector ports, lines crossed each other repeatedly, and the diagram became harder to read than before. We spent significant time analyzing the Graphviz layout engine mechanics, diagnosing the root causes, and developing ergonomic harness layout techniques to eliminate the clutter entirely.
 
 ---
 
@@ -212,6 +216,58 @@ for conn in ungrouped_connectors:
 
 ---
 
+## The Wire Clustering Challenge & How We Solved It
+
+### The Discovery: The "Spiderweb" Wire Phenomenon
+
+When visual grouping is introduced, Graphviz constrains nodes inside `subgraph cluster_*` bounding boxes. While this solves the physical packaging visualization, it places strict spatial boundaries on the layout engine. During testing on real-world circuits (`demo-sharan` with an LCD subassembly and `demo-7` with an ESP32 IoT node), we observed four distinct failure patterns:
+
+1. **Connector Pin Pinch Points:** In `demo-sharan`, multiple incoming cables from the Arduino and local connections from the potentiometer converged onto the same 16-pin LCD header (`X2`), creating an unreadable knot of bezier splines bunched at the connector face.
+2. **Spline Inversion Crossings:** When cable pin definitions were not ordered monotonically relative to connector pin positions, Graphviz routed upper cable wires to lower connector pins and lower cable wires to upper pins, causing conductor lines to cross over each other repeatedly.
+3. **Vertical Ballooning from Unused Pins:** Displaying full 16-pin headers when only a subset of pins were used created tall tables, forcing wire splines to stretch across wide vertical angles and collide with adjacent cables.
+4. **Long Ground & Power Loops:** Routing ground and 5V lines individually across the entire diagram to every subassembly component produced cluttered parallel tracks that overwhelmed the signal wiring.
+
+### The Root Cause Analysis
+
+Graphviz uses the `dot` hierarchical layout algorithm (`rankdir=LR`). In this model:
+- Nodes are assigned to discrete horizontal ranks.
+- Edges between ranks are rendered as cubic spline curves connecting HTML table port cells.
+- When an edge sequence does not match the physical top-to-bottom row order of the connector table, the splines must cross.
+- When external cables and local subassembly components all compete for the same input face (left side) of a connector, the port routing density exceeds visual tolerance.
+
+### The Engineering Solution & Ergonomic Workaround
+
+We systematically resolved the wire clustering through four key architectural and design patterns:
+
+#### 1. Monotonic Pin Ordering
+We enforced strict top-to-bottom monotonic alignment between cable conductors and connector pins. For example, on the ESP32 in `demo-7`:
+- Row 1 (`VIN: 5V`) connects to Wire 1 (`RD`)
+- Row 2 (`GND: GND`) connects to Wire 2 (`BK`)
+- Row 3 (`GPIO: Sig`) connects to Wire 3 (`Signal Color`)
+
+Because the wire index sequences strictly mirror the vertical pin order, Graphviz routes all conductors as completely straight, parallel horizontal splines with **zero crossings**.
+
+#### 2. Local Subassembly Loops (`loops:`)
+Instead of running long, cluttered external wires from the controller board to multiple pins on the remote connector, we leveraged WireViz's native `loops:` property on connectors:
+```yaml
+X2:
+  type: LCD Densitron LWM1604A
+  subtype: female
+  pins: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+  loops:
+    - [1, 5]    # Loop GND (0V) internally to R_W (Pin 5)
+    - [1, 16]   # Loop GND (0V) internally to Led- (Pin 16)
+```
+This keeps internal grounding and common rail distribution completely local to the connector table, eliminating multiple long traversing cables from the diagram.
+
+#### 3. Pin Trimming (`hide_disconnected_pins: true`)
+By enabling `hide_disconnected_pins: true` on multi-pin headers, WireViz automatically collapses unpopulated pins. This dramatically reduces the vertical height of connector nodes, bringing active pin rows into direct horizontal line-of-sight with incoming cables and preventing wide vertical spline deflections.
+
+#### 4. Port Face Segregation & Flow Decoupling
+In `demo-sharan`, the LCD display receives power and data from the Arduino on its left face, while connecting to its backlight resistor (`X4`) from its right face. By structuring connections so that downstream subassemblies flow naturally from left to right across connector ports, wire traffic is split across opposite faces instead of colliding into a single pinch point.
+
+---
+
 ## What We Learned (The Hard Way)
 
 
@@ -220,6 +276,9 @@ We initially worried that implementing visual grouping would require a custom re
 
 **2. The `tweak` hack was the proof-of-concept hiding in plain sight.**  
 Multiple users across issues #276, #325, and #478 had already validated the visual output using raw `tweak.append` injections. Their workarounds served as empirical proof that Graphviz clusters produce the right diagrams. Our job was not to invent a new rendering approach, but to promote a proven one from an unvalidated string hack into a typed, validated, first-class citizen of WireViz's schema.
+
+**3. Visual grouping alters layout dynamics — harness ergonomics matter.**  
+Adding Graphviz `cluster_*` subgraphs imposes strict spatial constraints on the layout engine. In an ungrouped graph, Graphviz has total freedom to shift nodes vertically to minimize edge tension. Inside a cluster, node positions are tightly bounded. We learned that first-class grouping must be paired with ergonomic harness design principles: monotonic pin ordering, local on-connector looping, and pin trimming. These best practices transform what would be a tangled "spiderweb" into a clean, professional, publication-quality wiring diagram.
 
 ---
 
