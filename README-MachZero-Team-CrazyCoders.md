@@ -179,6 +179,8 @@ The differences in visual clarity, wire routing, and system comprehension are pr
 
 ### 1. Before: Original WireViz Unmodularized Representation
 
+**Source Input:** [`examples/demo-sharan.yml`](examples/demo-sharan.yml) (rendered without the `groups:` container)
+
 In the unmodularized codebase, WireViz operates with a flat, 1-level topology where every connector and component is treated as an isolated, floating island:
 
 ![Original WireViz Unmodularized Output](docs/images/before_grouping_unmodularized.jpg)
@@ -193,9 +195,13 @@ In the unmodularized codebase, WireViz operates with a flat, 1-level topology wh
 
 ### 2. After: Our Modular Enclosure Model
 
+**Source Input:** [`examples/arduino_demo.yml`](examples/arduino_demo.yml) (and updated [`examples/demo-sharan.yml`](examples/demo-sharan.yml) with native `groups:`)
+
 Using our new first-class modular grouping architecture, the exact same circuit is rendered with structured physical boundaries and clear signal hierarchy:
 
 ![Our Modular Enclosure Model Output](docs/images/after_grouping_modularized.png)
+
+> **Note on the YAML Inputs:** Both files model the **exact same electrical circuit** (Arduino Uno driving an HD44780 LCD display with 10K contrast adjustment and 5V/GND rails). In the unmodularized original (`demo-sharan.yml` without groups), WireViz forced the user to declare every connector and component as an anonymous peer (`X1`, `X2`, `X3`, `X4`), creating six fragmented cable segments. In our modular model (`arduino_demo.yml`), the user can cleanly define parent enclosures (`groups:`) to unify multi-header boards and consolidate connections into organized, logical cable channels.
 
 #### Key Architectural & Visual Advancements:
 - **Cohesive Physical Enclosures:** The microcontroller is encapsulated inside an authentic teal dashed container (**Arduino Uno R3**), cleanly housing both its dedicated Power Rail (`Arduino_Power`) and its GPIO Header (`Arduino_Digital`). The display is encapsulated inside its own industrial blue enclosure (**LCD 1602 Display Module**).
@@ -218,6 +224,113 @@ Using our new first-class modular grouping architecture, the exact same circuit 
 | **Boundary Routing** | No concept of boundary crossing. | **Clean Boundary Ingress/Egress.** Cables penetrate enclosure walls orthogonally. |
 | **Cognitive Trace Time** | High (requires manual tracing of overlapping curves). | **Near-Zero.** Clear Left-to-Right signal and power distribution flow. |
 | **BOM / Assembly Fidelity** | Anonymous connector list with zero device hierarchy. | **Device-Aligned BOM.** Clear mapping between physical units and their mating cables. |
+
+---
+
+## Development Environment & Quick Setup Guide
+
+WireViz relies on Python for declarative parsing and data modeling, and delegates graphical layout and rendering to the system's native **Graphviz** engine. Follow this quick guide to set up the development environment across Linux, macOS, or Windows.
+
+### 1. System Prerequisites (Graphviz)
+
+Before installing the Python package, ensure **Graphviz** is installed and available on your system `PATH`:
+
+- **Debian / Ubuntu / Raspberry Pi OS:**
+  ```bash
+  sudo apt update
+  sudo apt install -y graphviz
+  ```
+- **Fedora / RHEL / CentOS:**
+  ```bash
+  sudo dnf install -y graphviz
+  ```
+- **Arch Linux:**
+  ```bash
+  sudo pacman -S graphviz
+  ```
+- **macOS (via Homebrew):**
+  ```bash
+  brew install graphviz
+  ```
+- **Windows (via Winget or Chocolatey):**
+  ```powershell
+  # Using winget
+  winget install Graphviz.Graphviz
+
+  # OR using Chocolatey
+  choco install graphviz
+  ```
+  *Note for Windows:* Ensure `dot` is added to your environment `PATH` (typically `C:\Program Files\Graphviz\bin`).
+
+Verify the Graphviz installation by running:
+```bash
+dot -V
+# Expected: dot - graphviz version ...
+```
+
+---
+
+### 2. Quick Setup (Virtual Environment)
+
+Clone the repository and set up an isolated Python virtual environment (Python 3.8+ recommended):
+
+```bash
+# 1. Clone the fork repository
+git clone https://github.com/YatishGowda09/WireViz.git
+cd WireViz
+
+# 2. Create and activate a virtual environment
+# Linux / macOS:
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Windows (PowerShell):
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+# Windows (Command Prompt):
+# .venv\Scripts\activate.bat
+```
+
+---
+
+### 3. Install WireViz in Development Mode
+
+Install WireViz in editable/development mode (`-e`), which links directly to the `src/` directory so any code modifications take effect immediately:
+
+```bash
+# Install WireViz and core dependencies
+pip install --upgrade pip
+pip install -e .
+
+# (Optional) Install development and testing tools
+pip install -r devtools.txt pytest
+```
+
+---
+
+### 4. Verify Setup & Render a Grouped Diagram
+
+Verify that the CLI is accessible and run the automated test suite:
+
+```bash
+# Verify CLI installation
+wireviz --help
+
+# Run group unit and rendering tests
+pytest tests/test_groups.py
+```
+
+Compile the Arduino LCD demo to generate PNG, SVG, HTML, and BOM TSV outputs with connector grouping enabled:
+
+```bash
+wireviz examples/arduino_demo.yml
+```
+
+This compiles `examples/arduino_demo.yml` and outputs:
+- `examples/arduino_demo.png` (Raster diagram)
+- `examples/arduino_demo.svg` (Scalable vector diagram)
+- `examples/arduino_demo.html` (Interactive web diagram)
+- `examples/arduino_demo.bom.tsv` (Bill of Materials)
 
 ---
 
