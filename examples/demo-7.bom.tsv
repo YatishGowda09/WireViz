@@ -1,0 +1,8 @@
+#	Qty	Unit	Description	Designators
+1	1		Connector, 1-Channel Relay Module, male, 3 pins	RELAY
+2	2		Connector, ACS712 Current Sensor, male, 3 pins	ACS712_DIST, ACS712_MAIN
+3	1		Connector, Active Buzzer Module, male, 2 pins	BUZZER
+4	1		Connector, ESP32 DevKit V1, female, 7 pins	ESP32
+5	1		Connector, ZMPT101B Voltage Sensor, male, 3 pins	ZMPT101B
+6	1	m	Cable, 2 x 0.2 mm²	W_BUZZER
+7	4	m	Cable, 3 x 0.2 mm²	W_DIST, W_MAIN, W_RELAY, W_VOLT

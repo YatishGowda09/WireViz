@@ -1,0 +1,108 @@
+# Device: theft-detector-node-01 (ESP32 DevKit)
+# WiFi: YOUR_WIFI_SSID / YOUR_WIFI_PASSWORD
+# MQTT Broker: mqtt.eclipseprojects.io:1883 (Client: theft_detector_01)
+# Telemetry Topic: iot/power_monitor/data | Alerts Topic: iot/power_monitor/alerts
+# Logic: Differential current threshold (0.5A, 5s delay) -> Buzzer, Alert, Cut Relay
+
+metadata:
+  title: "Theft Detector Node 01 - Wiring Diagram"
+  description: "ESP32 power theft monitor with dual ACS712 current sensors, ZMPT101B voltage sensor, buzzer and relay"
+  device: "theft-detector-node-01"
+  platform: "esp32 (esp32dev)"
+  logic: "differential_current (threshold: 0.5A, delay: 5s)"
+
+connectors:
+  ESP32:
+    type: ESP32 DevKit V1
+    subtype: female
+    pins: [VIN, GND, D34, D35, D32, D12, D14]
+    pinlabels: [5V, GND, "GPIO34 (Curr Main)", "GPIO35 (Curr Dist)", "GPIO32 (Volt Main)", "GPIO12 (Buzzer)", "GPIO14 (Relay)"]
+
+  ACS712_MAIN:
+    type: ACS712 Current Sensor
+    subtype: male
+    pins: [VCC, OUT, GND]
+    pinlabels: [5V, OUT, GND]
+
+  ACS712_DIST:
+    type: ACS712 Current Sensor
+    subtype: male
+    pins: [VCC, OUT, GND]
+    pinlabels: [5V, OUT, GND]
+
+  ZMPT101B:
+    type: ZMPT101B Voltage Sensor
+    subtype: male
+    pins: [VCC, OUT, GND]
+    pinlabels: [5V, OUT, GND]
+
+  BUZZER:
+    type: Active Buzzer Module
+    subtype: male
+    pins: [SIG, GND]
+    pinlabels: [IN, GND]
+
+  RELAY:
+    type: 1-Channel Relay Module
+    subtype: male
+    pins: [IN, GND, VCC]
+    pinlabels: [IN, GND, 5V]
+
+cables:
+  W_MAIN:
+    gauge: 0.2 mm2
+    length: 0.15
+    color_code: DIN
+    wirecount: 3
+    colors: [RD, YE, BK]
+
+  W_DIST:
+    gauge: 0.2 mm2
+    length: 0.15
+    color_code: DIN
+    wirecount: 3
+    colors: [RD, GN, BK]
+
+  W_VOLT:
+    gauge: 0.2 mm2
+    length: 0.15
+    color_code: DIN
+    wirecount: 3
+    colors: [RD, BU, BK]
+
+  W_BUZZER:
+    gauge: 0.2 mm2
+    length: 0.10
+    color_code: DIN
+    wirecount: 2
+    colors: [OG, BK]
+
+  W_RELAY:
+    gauge: 0.2 mm2
+    length: 0.15
+    color_code: DIN
+    wirecount: 3
+    colors: [VT, BK, RD]
+
+connections:
+  -
+    - ESP32: [VIN, D34, GND]
+    - W_MAIN: [1, 2, 3]
+    - ACS712_MAIN: [VCC, OUT, GND]
+  -
+    - ESP32: [VIN, D35, GND]
+    - W_DIST: [1, 2, 3]
+    - ACS712_DIST: [VCC, OUT, GND]
+  -
+    - ESP32: [VIN, D32, GND]
+    - W_VOLT: [1, 2, 3]
+    - ZMPT101B: [VCC, OUT, GND]
+  -
+    - ESP32: [D12, GND]
+    - W_BUZZER: [1, 2]
+    - BUZZER: [SIG, GND]
+  -
+    - ESP32: [D14, GND, VIN]
+    - W_RELAY: [1, 2, 3]
+    - RELAY: [IN, GND, VCC]
+  
