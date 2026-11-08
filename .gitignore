@@ -19,3 +19,4 @@ dist/
 # Other temporary files
 __pycache__
 .*.swp
+.superpowers/

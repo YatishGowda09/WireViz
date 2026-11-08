@@ -8,51 +8,6 @@
 
 ---
 
-## Our Journey
-
-### The First Hours: Searching for Direction
-
-We entered the hackathon on the Hardware track knowing we wanted to contribute to something tangible — a tool that engineers and makers actually use. We shortlisted three open-source repositories:
-
-- **[WLED](https://github.com/wled/WLED)** — LED strip controller firmware
-- **[cocotb](https://github.com/cocotb/cocotb)** — Python-based hardware verification framework
-- **[WireViz](https://github.com/wireviz/WireViz)** — Diagrams-as-Code for wiring harnesses
-
-We spent the first few hours reading through each codebase, understanding their architectures and scanning their issue trackers. Some of these repositories had sparse documentation, which made onboarding slow. More critically, most of the interesting issues were either already claimed or too deeply coupled to domain-specific hardware knowledge we didn't have.
-
-We couldn't find a viable, unclaimed issue until the last ten minutes before Round 1 began.
-
-### Round 1: The Stumble
-
-We found Issue #478  — a feature request from a sailboat owner asking WireViz to support visual grouping of connectors into physical device enclosures. The request resonated with us immediately; it was a real architectural gap that we felt we could address within the hackathon timeframe.
-
-But by then, the Round 1 evaluation judges were already at our table.
-
-We hadn't had time to prepare. We were still mentally processing the issue, the codebase, and the Graphviz rendering pipeline. When the judges asked us to explain the repository and our chosen issue. We couldn't articulate what WireViz was, or how we planned to solve it. The judges moved on quickly, we didn't get any questions to answer.
-
-### The Reset: Lunch and Regrouping
-
-After Round 1, we took a step back during the lunch break. Instead of spiraling, we made a deliberate decision: start over from scratch. No assumptions, no shortcuts.
-
-Over the next hour, we methodically:
-
-1. **Read the entire WireViz codebase** on the `dev` branch
-2. **Understood the pipeline end-to-end** — from YAML input through Python domain objects to Graphviz DOT generation and final PNG/SVG/HTML output.
-3. **Identified the exact architectural bottleneck** — the flat `self.connectors` dictionary in the `Harness` class and the unconditional root-level `dot.node()` emission in `create_graph()`.
-4. **Designed a clean, backward-compatible solution** — introducing a `Group` dataclass and leveraging Graphviz's native `subgraph cluster_*` mechanism.
-
-By the time we resurfaced, we had a working mental model of the entire system and a concrete implementation plan.
-
-### Round 2 and Beyond: Implementation and The Wire Cluttering Bug
-
-Round 2 evaluation was postponed due to time constraints. Rather than wait, we pushed forward into full implementation — defining the `Group` data model, writing the YAML parser extensions, and modifying the graph construction logic to wrap grouped connectors inside Graphviz cluster subgraphs.
-
-However, as soon as we tested our implementation against complex, multi-component real-world harnesses (an Arduino UNO + 16-pin LCD Display subassembly in `demo-sharan`, and an ESP32 IoT node with sensors and actuators in `demo-7`), we discovered a critical visual layout challenge: **wire clustering and severe edge crossing**. 
-
-While the connectors were neatly enclosed in group boxes, the wires connecting between the controllers and the clustered subassemblies became a tangled spiderweb. Pin pinch points appeared at connector ports, lines crossed each other repeatedly, and the diagram became harder to read than before. We spent significant time analyzing the Graphviz layout engine mechanics, diagnosing the root causes, and developing ergonomic harness layout techniques to eliminate the clutter entirely.
-
----
-
 ## What is WireViz?
 
 WireViz is a **"Diagrams-as-Code"** tool for documenting cables, wiring harnesses, and connector pinouts. Engineers describe their wiring systems declaratively in plain YAML files:
@@ -216,6 +171,56 @@ for conn in ungrouped_connectors:
 
 ---
 
+## Visual & Architectural Comparison: Unmodularized Baseline vs. Modular Enclosure Model
+
+To evaluate the real-world impact of our architectural changes, we tested the exact same hardware circuit — an **Arduino Uno driving a multi-line LCD display with a 10K contrast potentiometer** — across both the original unmodularized WireViz codebase and our new modular enclosure model.
+
+The differences in visual clarity, wire routing, and system comprehension are profound.
+
+### 1. Before: Original WireViz Unmodularized Representation
+
+In the unmodularized codebase, WireViz operates with a flat, 1-level topology where every connector and component is treated as an isolated, floating island:
+
+![Original WireViz Unmodularized Output](docs/images/before_grouping_unmodularized.jpg)
+
+#### Critical Failure Modes of the Unmodularized Output:
+- **Disjointed Entity Islands:** The Arduino board is represented only as an anonymous connector `X1`. The potentiometer floats as `X3`, the backlight current-limiting resistor floats as `X4`, and the LCD header sits as `X2`. There is zero visual indication that `X3` and `X4` are auxiliary components or that multiple headers belong to a single parent microcontroller board.
+- **The "Spiderweb" Cable Matrix:** Because Graphviz has no modular bounding boxes to guide ranking, all six cable objects (`W_POT_PWR`, `W_CONTRAST`, `W2`, `W_RES_IN`, `W_RES_OUT`, `W1`) compete for unconstrained canvas coordinates. Cables loop wildly across the canvas — `W_POT_PWR` arches over the top of the entire diagram, while `W1` loops underneath, creating overlapping tracks that resemble a tangled spiderweb.
+- **Cognitive Overload:** An engineer or technician inspecting the diagram cannot see the high-level architecture. To answer a simple question like *"Where does the LCD contrast voltage come from?"*, the reader must trace individual bezier curves through a dense thicket of crossing lines.
+- **Header Inflexibility:** If an Arduino has multiple physical headers (e.g., an 8-pin digital header, a 6-pin power rail, and a 6-pin analog header), original WireViz scatters them across separate horizontal ranks as if they were three completely unrelated devices.
+
+---
+
+### 2. After: Our Modular Enclosure Model
+
+Using our new first-class modular grouping architecture, the exact same circuit is rendered with structured physical boundaries and clear signal hierarchy:
+
+![Our Modular Enclosure Model Output](docs/images/after_grouping_modularized.png)
+
+#### Key Architectural & Visual Advancements:
+- **Cohesive Physical Enclosures:** The microcontroller is encapsulated inside an authentic teal dashed container (**Arduino Uno R3**), cleanly housing both its dedicated Power Rail (`Arduino_Power`) and its GPIO Header (`Arduino_Digital`). The display is encapsulated inside its own industrial blue enclosure (**LCD 1602 Display Module**).
+- **Consolidated Bus Architecture:** Instead of six fragmented, competing cable blocks, connections are grouped into logical, standardized channels:
+  - A 2-conductor **Power Cable** (`+5V` Red, `GND` Black) routing clean power to the display.
+  - A 6-conductor parallel **Data & Control Bus** (`RS`, `E`, `D4`, `D5`, `D6`, `D7`) with distinct IEC wire colors (`GN`, `BU`, `YE`, `OG`, `WH`, `GY`).
+  - A dedicated **Contrast Wire** (`V0_CONTRAST` Violet) from the 10K trimpot wiper.
+- **Clean Orthogonal Boundary Crossing:** External cables route cleanly across the enclosure perimeter walls. Graphviz's auto-router detects the cluster boundary and clips conductor splines with straight, parallel trajectories, eliminating unnecessary line crossings.
+- **Instant System Comprehension:** The eye immediately grasps the hardware architecture in under three seconds: **Controller on the left, Display on the right, Local Trimmer on the bottom.**
+
+---
+
+### 3. Side-by-Side Comparison Matrix
+
+| Architectural Dimension | Original Unmodularized WireViz | Our Modular Enclosure Model |
+|-------------------------|--------------------------------|-----------------------------|
+| **Physical Packaging Context** | None. Connectors float as isolated, disconnected tables. | **Full Containment.** Connectors are bound to named physical enclosures (`Arduino Uno R3`, `LCD Module`). |
+| **Multi-Header Support** | Multiple headers on one board scatter across the page. | **Unified Chassis.** Multiple headers are grouped cleanly inside a single parent box. |
+| **Wire Routing Topology** | Unconstrained, looping splines crossing across all axes ("spiderweb"). | **Structured Bus.** Straight, parallel, monotonic traces with minimal crossings. |
+| **Boundary Routing** | No concept of boundary crossing. | **Clean Boundary Ingress/Egress.** Cables penetrate enclosure walls orthogonally. |
+| **Cognitive Trace Time** | High (requires manual tracing of overlapping curves). | **Near-Zero.** Clear Left-to-Right signal and power distribution flow. |
+| **BOM / Assembly Fidelity** | Anonymous connector list with zero device hierarchy. | **Device-Aligned BOM.** Clear mapping between physical units and their mating cables. |
+
+---
+
 ## The Wire Clustering Challenge & How We Solved It
 
 ### The Discovery: The "Spiderweb" Wire Phenomenon
@@ -295,6 +300,43 @@ Adding Graphviz `cluster_*` subgraphs imposes strict spatial constraints on the 
 | `src/wireviz/wv_cli.py` | Click-based CLI (`wireviz harness.yml`) |
 | `docs/syntax.md` | YAML syntax reference documentation |
 | `tests/rendering/` | Rendering regression test YAML files |
+
+---
+
+## Our Journey
+
+### Searching for Direction
+
+We entered the hackathon on the Hardware track knowing we wanted to contribute to something tangible — a tool that engineers and makers actually use. We shortlisted three open-source repositories:
+
+- **[WLED](https://github.com/wled/WLED)** — LED strip controller firmware
+- **[cocotb](https://github.com/cocotb/cocotb)** — Python-based hardware verification framework
+- **[WireViz](https://github.com/wireviz/WireViz)** — Diagrams-as-Code for wiring harnesses
+
+We spent the first few hours reading through each codebase, understanding their architectures, and scanning their issue trackers. Some of these repositories had sparse documentation, which made onboarding slow. More critically, most of the interesting issues were either already claimed or too deeply coupled to domain-specific hardware knowledge we didn't have.
+
+We kept digging until we found Issue #478 — a feature request from a sailboat owner asking WireViz to support visual grouping of connectors into physical device enclosures. The request resonated with us immediately; it was a real architectural gap that we felt we could address within the hackathon timeframe.
+
+### The Reset: Architecture and First Principles
+
+Initially, navigating an unfamiliar codebase and Graphviz's rendering pipeline was challenging. Rather than rushing ahead with hasty assumptions, we took a step back and made a deliberate decision: understand the system from first principles.
+
+We methodically:
+
+1. **Read the entire WireViz codebase** on the `dev` branch.
+2. **Understood the pipeline end-to-end** — from YAML input through Python domain objects to Graphviz DOT generation and final PNG/SVG/HTML output.
+3. **Identified the exact architectural bottleneck** — the flat `self.connectors` dictionary in the `Harness` class and the unconditional root-level `dot.node()` emission in `create_graph()`.
+4. **Designed a clean, backward-compatible solution** — introducing a `Group` dataclass and leveraging Graphviz's native `subgraph cluster_*` mechanism.
+
+By the time we resurfaced, we had a solid mental model of the entire system and a concrete implementation plan.
+
+### Implementation and The Wire Cluttering Bug
+
+With a clear plan in place, we pushed forward into full implementation — defining the `Group` data model, writing the YAML parser extensions, and modifying the graph construction logic to wrap grouped connectors inside Graphviz cluster subgraphs.
+
+However, as soon as we tested our implementation against complex, multi-component real-world harnesses (an Arduino UNO + 16-pin LCD Display subassembly in `demo-sharan`, and an ESP32 IoT node with sensors and actuators in `demo-7`), we discovered a critical visual layout challenge: **wire clustering and severe edge crossing**. 
+
+While the connectors were neatly enclosed in group boxes, the wires connecting between the controllers and the clustered subassemblies became a tangled spiderweb. Pin pinch points appeared at connector ports, lines crossed each other repeatedly, and the diagram became harder to read than before. We spent significant time analyzing the Graphviz layout engine mechanics, diagnosing the root causes, and developing ergonomic harness layout techniques to eliminate the clutter entirely.
 
 ---
 

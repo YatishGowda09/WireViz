@@ -1,0 +1,84 @@
+metadata:
+  title: Arduino Uno to 1602 LCD Display Wiring Demo
+  description: 4-bit parallel LCD interface with 10k contrast potentiometer
+  author: Team CrazyCoders
+
+connectors:
+  Arduino_Power:
+    type: 0.1" Female Header (Power)
+    subtype: female
+    pinlabels: [RESET, 3.3V, 5V, GND1, GND2, VIN]
+    notes: Arduino Uno Power Rail
+
+  Arduino_Digital:
+    type: 0.1" Female Header (Digital)
+    subtype: female
+    pinlabels: [D0, D1, D2, D3, D4, D5, D6, D7]
+    notes: Arduino GPIO Pins
+
+  Potentiometer:
+    type: 10K Trimpot
+    pinlabels: [VCC, WIPER, GND]
+    notes: Contrast adjustment
+
+  LCD_Display:
+    type: HD44780 16-pin Header
+    subtype: male
+    pinlabels: [VSS, VDD, V0, RS, RW, E, D0, D1, D2, D3, D4, D5, D6, D7, BLA, BLK]
+    notes: 16x2 Character LCD
+
+cables:
+  Power_Cable:
+    type: Ribbon / Jumper Wire
+    colors: [RD, BK]
+    wirelabels: [+5V, GND]
+    length: 0.15 m
+
+  Data_Cable:
+    type: Ribbon / Jumper Wire
+    colors: [GN, BU, YE, OG, WH, GY]
+    wirelabels: [RS, E, D4, D5, D6, D7]
+    length: 0.20 m
+
+  Contrast_Wire:
+    type: Jumper Wire
+    colors: [VT]
+    wirelabels: [V0_CONTRAST]
+    length: 0.10 m
+
+connections:
+  # 5V and GND from Arduino Power to LCD power (VDD=pin 2, VSS=pin 1)
+  -
+    - Arduino_Power: [3, 4]
+    - Power_Cable: [1, 2]
+    - LCD_Display: [2, 1]
+
+  # 6 Control & Data lines from Arduino Digital (D2, D3, D4, D5, D6, D7) to LCD (RS=4, E=6, D4=11, D5=12, D6=13, D7=14)
+  -
+    - Arduino_Digital: [3, 4, 5, 6, 7, 8]
+    - Data_Cable: [1, 2, 3, 4, 5, 6]
+    - LCD_Display: [4, 6, 11, 12, 13, 14]
+
+  # Potentiometer Wiper to LCD V0 (pin 3)
+  -
+    - Potentiometer: 2
+    - Contrast_Wire: 1
+    - LCD_Display: 3
+
+tweak:
+  append: |
+    subgraph cluster_arduino {
+      label = "Arduino Uno R3"
+      style = "dashed,rounded"
+      color = "#00878F"
+      bgcolor = "#F0F9FA"
+      "Arduino_Power"
+      "Arduino_Digital"
+    }
+    subgraph cluster_lcd {
+      label = "LCD 1602 Display Module"
+      style = "dashed,rounded"
+      color = "#1F4E79"
+      bgcolor = "#F2F5F9"
+      "LCD_Display"
+    }

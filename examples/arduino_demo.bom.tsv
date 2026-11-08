@@ -1,0 +1,8 @@
+#	Qty	Unit	Description	Designators
+1	1		Connector, 0.1" Female Header (Digital), female, 8 pins	Arduino_Digital
+2	1		Connector, 0.1" Female Header (Power), female, 6 pins	Arduino_Power
+3	1		Connector, 10K Trimpot, 3 pins	Potentiometer
+4	1		Connector, HD44780 16-pin Header, male, 16 pins	LCD_Display
+5	1	m	Cable, Jumper Wire, 1 wires	Contrast_Wire
+6	1	m	Cable, Ribbon / Jumper Wire, 2 wires	Power_Cable
+7	1	m	Cable, Ribbon / Jumper Wire, 6 wires	Data_Cable
