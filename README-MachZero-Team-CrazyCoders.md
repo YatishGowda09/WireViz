@@ -136,25 +136,73 @@ groups:
     members: [J1, J2]
 ```
 
-### What Changes
+### What Changes (Planned Code Snippets)
 
 **1. Data Model (`wv_dataclasses.py`)**
-- New `Group` dataclass with fields: `name`, `label`, `style`, `color`, `bgcolor`, `members`
-- New `self.groups` dictionary in the `Harness` class
 
-**2. YAML Parser (`wireviz.py`)**
-- Parse the `groups:` section from input YAML
-- Validate that every member in `members` exists in `harness.connectors` or `harness.cables`
-- Raise clear errors on invalid references (eliminating the silent failures of `tweak.append`)
+Define the new `Group` domain entity:
+```python
+@dataclass
+class Group:
+    name: str
+    label: Optional[str] = None
+    style: Optional[str] = None
+    color: Optional[SingleColor] = None
+    bgcolor: Optional[SingleColor] = None
+    members: List[str] = field(default_factory=list)
+
+    def __post_init__(self):
+        if self.label is None:
+            self.label = self.name
+        if self.color and not isinstance(self.color, SingleColor):
+            self.color = SingleColor(self.color)
+        if self.bgcolor and not isinstance(self.bgcolor, SingleColor):
+            self.bgcolor = SingleColor(self.bgcolor)
+```
+In `Harness`: add `self.groups: Dict[str, Group] = {}` and an `add_group()` helper method.
+
+**2. YAML Parser & Validation (`wireviz.py`)**
+
+Parse the `groups:` section and fail fast on invalid member names:
+```python
+# In parse(): register and validate groups
+if "groups" in yaml_data and isinstance(yaml_data["groups"], dict):
+    for group_name, group_attrs in yaml_data["groups"].items():
+        for member in group_attrs.get("members", []):
+            if member not in harness.connectors and member not in harness.cables:
+                raise ValueError(f"Group '{group_name}' references unknown member '{member}'")
+        harness.add_group(name=group_name, **group_attrs)
+```
 
 **3. Graph Generator (`wv_harness.py`)**
-- In `create_graph()`, grouped connectors are rendered inside `dot.subgraph(name=f"cluster_{id}")` instead of the root graph
-- Ungrouped connectors continue to render at root level (100% backward compatible)
-- Wire edges, mate arrows, and loops remain untouched — Graphviz routes edges across cluster boundaries automatically
+
+Wrap grouped connector nodes in Graphviz cluster subgraphs inside `create_graph()`:
+```python
+# Inside Harness.create_graph()
+# 1. Render connectors that belong to a group inside their respective cluster
+for group in self.groups.values():
+    with dot.subgraph(name=f"cluster_{group.name}") as cluster:
+        cluster.attr(
+            label=group.label,
+            style=group.style or "solid",
+            color=group.color.html if group.color else "#666666",
+            bgcolor=group.bgcolor.html if group.bgcolor else "transparent",
+            fontname=self.options.fontname,
+        )
+        for member_name in group.members:
+            if member_name in self.connectors:
+                conn = self.connectors[member_name]
+                gv_html = gv_node_component(conn)
+                cluster.node(conn.designator, label=f"<\n{gv_html}\n>", shape="box", style="filled")
+
+# 2. Render ungrouped connectors at the root level (preserves 100% backward compatibility)
+for conn in ungrouped_connectors:
+    dot.node(conn.designator, label=f"<\n{gv_html}\n>", shape="box", style="filled")
+```
 
 **4. Documentation & Tests**
-- New test YAML in `tests/rendering/`
-- Updated `docs/syntax.md` with the `groups:` schema
+- Add automated regression tests in `tests/rendering/` verifying both grouped and ungrouped connectors.
+- Document the new `groups:` schema in `docs/syntax.md`.
 
 ### Why This Works
 
