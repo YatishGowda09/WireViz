@@ -105,4 +105,25 @@ connections:
     - ESP32: [D14, GND, VIN]
     - W_RELAY: [1, 2, 3]
     - RELAY: [IN, GND, VCC]
-  
+
+groups:
+  controller_unit:
+    label: "ESP32 Controller Node"
+    style: solid
+    color: "#2C3E50"
+    bgcolor: "#F2F4F4"
+    members: [ESP32]
+
+  measurement_unit:
+    label: "Power Monitoring Sensors"
+    style: dashed
+    color: "#2980B9"
+    bgcolor: "#EBF5FB"
+    members: [ACS712_MAIN, ACS712_DIST, ZMPT101B]
+
+  actuator_unit:
+    label: "Alarm & Contactor Protection"
+    style: dashed
+    color: "#C0392B"
+    bgcolor: "#FDEDEC"
+    members: [BUZZER, RELAY]

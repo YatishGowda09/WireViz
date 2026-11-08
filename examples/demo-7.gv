@@ -4,7 +4,9 @@ graph {
 	graph [bgcolor="#FFFFFF" fontname=arial nodesep=0.33 rankdir=LR ranksep=2]
 	node [fillcolor="#FFFFFF" fontname=arial height=0 margin=0 shape=none style=filled width=0]
 	edge [fontname=arial style=bold]
-	ESP32 [label=<
+	subgraph cluster_controller_unit {
+		bgcolor="#F2F4F4" color="#2C3E50" fontname=arial label="ESP32 Controller Node" style=solid
+		ESP32 [label=<
 <table border="0" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF">
  <tr>
   <td>
@@ -62,7 +64,10 @@ graph {
  </tr>
 </table>
 > shape=box style=filled]
-	ACS712_MAIN [label=<
+	}
+	subgraph cluster_measurement_unit {
+		bgcolor="#EBF5FB" color="#2980B9" fontname=arial label="Power Monitoring Sensors" style=dashed
+		ACS712_MAIN [label=<
 <table border="0" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF">
  <tr>
   <td>
@@ -104,7 +109,7 @@ graph {
  </tr>
 </table>
 > shape=box style=filled]
-	ACS712_DIST [label=<
+		ACS712_DIST [label=<
 <table border="0" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF">
  <tr>
   <td>
@@ -146,7 +151,7 @@ graph {
  </tr>
 </table>
 > shape=box style=filled]
-	ZMPT101B [label=<
+		ZMPT101B [label=<
 <table border="0" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF">
  <tr>
   <td>
@@ -188,7 +193,10 @@ graph {
  </tr>
 </table>
 > shape=box style=filled]
-	BUZZER [label=<
+	}
+	subgraph cluster_actuator_unit {
+		bgcolor="#FDEDEC" color="#C0392B" fontname=arial label="Alarm & Contactor Protection" style=dashed
+		BUZZER [label=<
 <table border="0" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF">
  <tr>
   <td>
@@ -226,7 +234,7 @@ graph {
  </tr>
 </table>
 > shape=box style=filled]
-	RELAY [label=<
+		RELAY [label=<
 <table border="0" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF">
  <tr>
   <td>
@@ -268,6 +276,7 @@ graph {
  </tr>
 </table>
 > shape=box style=filled]
+	}
 	W_MAIN [label=<
 <table border="0" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF">
  <tr>
