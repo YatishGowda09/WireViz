@@ -21,32 +21,32 @@ connectors:
   ACS712_MAIN:
     type: ACS712 Current Sensor
     subtype: male
-    pins: [VCC, OUT, GND]
-    pinlabels: [5V, OUT, GND]
+    pins: [VCC, GND, OUT]
+    pinlabels: [5V, GND, OUT]
 
   ACS712_DIST:
     type: ACS712 Current Sensor
     subtype: male
-    pins: [VCC, OUT, GND]
-    pinlabels: [5V, OUT, GND]
+    pins: [VCC, GND, OUT]
+    pinlabels: [5V, GND, OUT]
 
   ZMPT101B:
     type: ZMPT101B Voltage Sensor
     subtype: male
-    pins: [VCC, OUT, GND]
-    pinlabels: [5V, OUT, GND]
+    pins: [VCC, GND, OUT]
+    pinlabels: [5V, GND, OUT]
 
   BUZZER:
     type: Active Buzzer Module
     subtype: male
-    pins: [SIG, GND]
-    pinlabels: [IN, GND]
+    pins: [GND, SIG]
+    pinlabels: [GND, IN]
 
   RELAY:
     type: 1-Channel Relay Module
     subtype: male
-    pins: [IN, GND, VCC]
-    pinlabels: [IN, GND, 5V]
+    pins: [VCC, GND, IN]
+    pinlabels: [5V, GND, IN]
 
 cables:
   W_MAIN:
@@ -54,57 +54,61 @@ cables:
     length: 0.15
     color_code: DIN
     wirecount: 3
-    colors: [RD, YE, BK]
+    colors: [RD, BK, YE]
 
   W_DIST:
     gauge: 0.2 mm2
     length: 0.15
     color_code: DIN
     wirecount: 3
-    colors: [RD, GN, BK]
+    colors: [RD, BK, GN]
 
   W_VOLT:
     gauge: 0.2 mm2
     length: 0.15
     color_code: DIN
     wirecount: 3
-    colors: [RD, BU, BK]
+    colors: [RD, BK, BU]
 
   W_BUZZER:
     gauge: 0.2 mm2
     length: 0.10
     color_code: DIN
     wirecount: 2
-    colors: [OG, BK]
+    colors: [BK, OG]
 
   W_RELAY:
     gauge: 0.2 mm2
     length: 0.15
     color_code: DIN
     wirecount: 3
-    colors: [VT, BK, RD]
+    colors: [RD, BK, VT]
 
 connections:
+  # All connections strictly follow ESP32 vertical pin order:
+  # Row 1 (VIN: 5V) -> Wire 1 (RD)
+  # Row 2 (GND: GND) -> Wire 2 (BK)
+  # Row 3..7 (GPIO pins) -> Wire 3
   -
-    - ESP32: [VIN, D34, GND]
+    - ESP32: [VIN, GND, D34]
     - W_MAIN: [1, 2, 3]
-    - ACS712_MAIN: [VCC, OUT, GND]
+    - ACS712_MAIN: [VCC, GND, OUT]
   -
-    - ESP32: [VIN, D35, GND]
+    - ESP32: [VIN, GND, D35]
     - W_DIST: [1, 2, 3]
-    - ACS712_DIST: [VCC, OUT, GND]
+    - ACS712_DIST: [VCC, GND, OUT]
   -
-    - ESP32: [VIN, D32, GND]
+    - ESP32: [VIN, GND, D32]
     - W_VOLT: [1, 2, 3]
-    - ZMPT101B: [VCC, OUT, GND]
+    - ZMPT101B: [VCC, GND, OUT]
   -
-    - ESP32: [D12, GND]
-    - W_BUZZER: [1, 2]
-    - BUZZER: [SIG, GND]
-  -
-    - ESP32: [D14, GND, VIN]
+    - ESP32: [VIN, GND, D14]
     - W_RELAY: [1, 2, 3]
-    - RELAY: [IN, GND, VCC]
+    - RELAY: [VCC, GND, IN]
+  -
+    - ESP32: [GND, D12]
+    - W_BUZZER: [1, 2]
+    - BUZZER: [GND, SIG]
 
 groups:
   controller_unit:
@@ -126,4 +130,4 @@ groups:
     style: dashed
     color: "#C0392B"
     bgcolor: "#FDEDEC"
-    members: [BUZZER, RELAY]
+    members: [RELAY, BUZZER]
