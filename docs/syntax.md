@@ -25,6 +25,13 @@ connections:  # list of all connections to be made
     ...
   ...
 
+groups:       # dictionary of visual enclosures grouping connectors/cables
+  <str>   :   # unique group designator/name
+    ...       # group attributes (see below)
+  <str>   :
+    ...
+  ...
+
 additional_bom_items:  # custom items to add to BOM
   - <bom-item>           # BOM item (see below)
   ...
@@ -340,6 +347,62 @@ connections:
 ```
 
 If any component is defined in the `connectors` or `cables` sections but not referenced in `connections`, a warning is printed in the console.
+
+
+## Groups
+
+Connectors (and cables) can be visually grouped into enclosing boundary boxes (representing physical hardware units, enclosures, device panels, or subassemblies) using the `groups:` section.
+
+Behind the scenes, WireViz renders each group as a native Graphviz cluster subgraph (`cluster_<group_name>`), drawing an enclosing boundary box around all members declared inside it while automatically preserving inter-component wiring.
+
+```yaml
+groups:
+  <str>:                  # unique group identifier/name
+    label: <str>          # title displayed on the group enclosure box (default: group name)
+    style: <str>          # border style: solid, dashed, dotted, rounded (default: solid)
+    color: <color>        # border color (hex code or color code, default: #666666)
+    bgcolor: <color>      # box background fill color (hex code or color code, default: transparent)
+    members: [<str>, ...] # list of connector or cable designators inside this box
+```
+
+### Example
+
+```yaml
+connectors:
+  J1:
+    type: 4-pin
+    pinlabels: [VCC, GND, TX, RX]
+  J2:
+    type: 2-pin
+    pinlabels: [PWR+, PWR-]
+  Sensor_In:
+    type: 4-pin
+    pinlabels: [VCC, GND, TX, RX]
+
+cables:
+  W1:
+    colors: [RD, BK, WH, GN]
+
+connections:
+  -
+    - J1: [1, 2, 3, 4]
+    - W1: [1, 2, 3, 4]
+    - Sensor_In: [1, 2, 3, 4]
+
+groups:
+  autopilot:
+    label: "Autopilot Unit"
+    style: dashed
+    color: "#336699"
+    bgcolor: "#F4F7F9"
+    members: [J1, J2]
+```
+
+### Notes on Groups
+* **Default Label:** If `label` is omitted, it defaults to the group's identifier (`autopilot`).
+* **Defaults:** If styling properties are omitted, sensible defaults apply (`solid` border, transparent fill).
+* **Validation:** All entries in `members` are rigorously validated against known connectors and cables. Specifying an unknown member name immediately raises a descriptive `ValueError`.
+* **Zero Breaking Changes:** YAML files without a `groups:` section behave identically to previous versions.
 
 
 ## Metadata entries

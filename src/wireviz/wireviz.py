@@ -377,12 +377,50 @@ def parse(
         template_cables.keys()
     )
     used_components = set(designators_and_templates.values())
+    if "groups" in yaml_data and isinstance(yaml_data["groups"], dict):
+        for group_data in yaml_data["groups"].values():
+            if isinstance(group_data, dict):
+                for m in group_data.get("members", []):
+                    used_components.add(m)
     forgotten_components = [c for c in proposed_components if not c in used_components]
     if len(forgotten_components) > 0:
         print(
             "Warning: The following components are not referenced in any connection set:"
         )
         print(", ".join(forgotten_components))
+
+    if "groups" in yaml_data and isinstance(yaml_data["groups"], dict):
+        for group_name, group_data in yaml_data["groups"].items():
+            if not isinstance(group_data, dict):
+                continue
+            members = group_data.get("members", [])
+            if not isinstance(members, list):
+                members = [members]
+
+            # If a member is a connector or cable template not yet in harness, instantiate it
+            for member in members:
+                if member in template_connectors and member not in harness.connectors:
+                    harness.add_connector(
+                        designator=member, **template_connectors[member]
+                    )
+                elif member in template_cables and member not in harness.cables:
+                    harness.add_cable(designator=member, **template_cables[member])
+
+            # Rigorous validation against harness.connectors and harness.cables
+            for member in members:
+                if member not in harness.connectors and member not in harness.cables:
+                    raise ValueError(
+                        f"Group '{group_name}' references unknown member '{member}'."
+                    )
+
+            harness.add_group(
+                name=group_name,
+                label=group_data.get("label"),
+                style=group_data.get("style"),
+                color=group_data.get("color"),
+                bgcolor=group_data.get("bgcolor"),
+                members=members,
+            )
 
     if "additional_bom_items" in yaml_data:
         for line in yaml_data["additional_bom_items"]:

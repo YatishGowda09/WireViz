@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from collections import namedtuple
 from dataclasses import dataclass, field
 from enum import Enum
 from itertools import zip_longest
@@ -8,7 +7,6 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from wireviz.wv_bom import (
     BomHash,
-    BomHashList,
     PartNumberInfo,
     QtyMultiplierCable,
     QtyMultiplierConnector,
@@ -112,6 +110,26 @@ class Options:
 class Tweak:
     override: Optional[Dict[Designator, Dict[str, Optional[str]]]] = None
     append: Union[str, List[str], None] = None
+
+
+@dataclass
+class Group:
+    name: str
+    label: Optional[str] = None
+    style: Optional[str] = None
+    color: Optional[SingleColor] = None
+    bgcolor: Optional[SingleColor] = None
+    members: List[str] = field(default_factory=list)
+
+    def __post_init__(self):
+        if self.label is None:
+            self.label = self.name
+        if isinstance(self.style, (list, tuple)):
+            self.style = ",".join(str(s) for s in self.style)
+        if self.color is not None and not isinstance(self.color, SingleColor):
+            self.color = SingleColor(self.color)
+        if self.bgcolor is not None and not isinstance(self.bgcolor, SingleColor):
+            self.bgcolor = SingleColor(self.bgcolor)
 
 
 @dataclass
@@ -510,7 +528,7 @@ class WireClass:
         if not self.gauge:
             return None
         actual_gauge = f"{self.gauge.number} {self.gauge.unit}"
-        actual_gauge = actual_gauge.replace("mm2", "mm\u00B2")
+        actual_gauge = actual_gauge.replace("mm2", "mm\u00b2")
         return actual_gauge
 
     @property
@@ -571,7 +589,7 @@ class Cable(TopLevelGraphicalComponent):
         if not self.gauge:
             return None
         actual_gauge = f"{self.gauge.number} {self.gauge.unit}"
-        actual_gauge = actual_gauge.replace("mm2", "mm\u00B2")
+        actual_gauge = actual_gauge.replace("mm2", "mm\u00b2")
         return actual_gauge
 
     @property
@@ -587,7 +605,7 @@ class Cable(TopLevelGraphicalComponent):
             elif self.gauge.unit.upper() == "AWG":
                 equivalent_gauge = f" ({mm2_equiv(self.gauge.number)} mm2)"
         out = f"{actual_gauge}{equivalent_gauge}"
-        out = out.replace("mm2", "mm\u00B2")
+        out = out.replace("mm2", "mm\u00b2")
         return out
 
     @property

@@ -2,7 +2,6 @@
 
 import re
 import warnings
-from itertools import zip_longest
 from typing import Any, List, Optional, Tuple, Union
 
 from wireviz import APP_NAME, APP_URL, __version__
@@ -16,8 +15,6 @@ from wireviz.wv_dataclasses import (
     Connector,
     MateComponent,
     MatePin,
-    Options,
-    PartNumberInfo,
     ShieldClass,
     WireClass,
 )

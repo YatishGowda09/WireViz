@@ -1,0 +1,51 @@
+metadata:
+  title: "Grouped Connectors Test Harness"
+  description: "Test harness demonstrating visual cluster grouping of connectors and cables into physical unit boxes"
+
+connectors:
+  J1:
+    type: 4-pin
+    pinlabels: [VCC, GND, TX, RX]
+  J2:
+    type: 2-pin
+    pinlabels: [PWR+, PWR-]
+  Sensor_In:
+    type: 4-pin
+    pinlabels: [VCC, GND, TX, RX]
+  PWR_IN:
+    type: 2-pin
+    pinlabels: [12V, GND]
+  PWR_OUT:
+    type: 2-pin
+    pinlabels: [12V, GND]
+
+cables:
+  W1:
+    colors: [RD, BK, WH, GN]
+  W2:
+    colors: [RD, BK]
+
+connections:
+  -
+    - J1: [1, 2, 3, 4]
+    - W1: [1, 2, 3, 4]
+    - Sensor_In: [1, 2, 3, 4]
+  -
+    - PWR_IN: [1, 2]
+    - W2: [1, 2]
+    - PWR_OUT: [1, 2]
+
+groups:
+  autopilot:
+    label: "Autopilot Unit"
+    style: dashed
+    color: "#336699"
+    bgcolor: "#F4F7F9"
+    members: [J1, J2]
+
+  power_distribution:
+    label: "Power Distribution Panel"
+    style: solid
+    color: "#CC3333"
+    bgcolor: "#FFF5F5"
+    members: [PWR_IN, PWR_OUT]

@@ -3,23 +3,22 @@ metadata:
   description: "4-bit LCD interface with 10k contrast potentiometer and 12-ohm backlight resistor"
 
 connectors:
-  X1 - Arduino UNO:
+  X1:
     type: Arduino UNO
     subtype: female
     pinlabels: [5V, GND, D2, D3, D4, D5, D6, D7]
 
-  X2 - LCD Densitron LWM1604A:
+  X2:
     type: LCD Densitron LWM1604A
     subtype: female
     pinlabels: [0V, 5V, V0_contrast, RS, R_W, E, DB0, DB1, DB2, DB3, DB4, DB5, DB6, DB7, Led+, Led-]
 
-  X3 - Potentiometer 10K
+  X3:
     type: Potentiometer 10K
     subtype: female
     pinlabels: [GND, Wiper, 5V]
 
-
-  X4 - Resistor 12 Ohm:
+  X4:
     type: Resistor 12 Ohm
     subtype: axial
     pinlabels: [5V_IN, LED_OUT]

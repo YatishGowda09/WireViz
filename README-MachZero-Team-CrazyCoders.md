@@ -87,10 +87,17 @@ The key value proposition: wiring documentation becomes version-controllable, di
 
 ## The Issue: #478
 
+### The Real-World Problem
 
 The issue author documents the electronics inside a sailboat. A boat's electrical system consists of distinct physical hardware units — an Autopilot computer, a chartplotter, instrument clusters, a battery distribution panel. Each unit is a single physical box with multiple connectors mounted on it (power, data, sensors, motors).
 
 When these connectors are defined in WireViz, every connector becomes an isolated, floating entity on the diagram. There is no visual boundary indicating that five connectors all belong to the same Autopilot box. The diagram accurately shows pin-level wiring, but it completely fails to communicate the physical packaging of the system.
+
+### Community Demand & Maintainer Support
+
+Maintainers and users have been actively discussing this exact feature across multiple issues ([#478](https://github.com/wireviz/WireViz/issues/478), [#325](https://github.com/wireviz/WireViz/issues/325), and [#276](https://github.com/wireviz/WireViz/issues/276)) for over two years. Maintainer `@kvid` explicitly invited a community pull request with a clean syntax for grouping. 
+
+We aren't working on an obscure edge case; we are solving one of the top three architectural gaps in the entire repository.
 
 ### Why WireViz Cannot Do This Today
 
