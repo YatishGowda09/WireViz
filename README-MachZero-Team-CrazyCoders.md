@@ -386,20 +386,6 @@ In `demo-arduino-old-syntax`, the LCD display receives power and data from the A
 
 ---
 
-## What We Learned (The Hard Way)
-
-
-**1. Graphviz is more powerful than it looks.**  
-We initially worried that implementing visual grouping would require a custom rendering engine or SVG post-processing. Once we understood Graphviz's native `subgraph cluster_*` mechanism and confirmed that edges route seamlessly across cluster boundaries, the solution became dramatically simpler.
-
-**2. The `tweak` hack was the proof-of-concept hiding in plain sight.**  
-Multiple users across issues #276, #325, and #478 had already validated the visual output using raw `tweak.append` injections. Their workarounds served as empirical proof that Graphviz clusters produce the right diagrams. Our job was not to invent a new rendering approach, but to promote a proven one from an unvalidated string hack into a typed, validated, first-class citizen of WireViz's schema.
-
-**3. Visual grouping alters layout dynamics — harness ergonomics matter.**  
-Adding Graphviz `cluster_*` subgraphs imposes strict spatial constraints on the layout engine. In an ungrouped graph, Graphviz has total freedom to shift nodes vertically to minimize edge tension. Inside a cluster, node positions are tightly bounded. We learned that first-class grouping must be paired with ergonomic harness design principles: monotonic pin ordering, local on-connector looping, and pin trimming. These best practices transform what would be a tangled "spiderweb" into a clean, professional, publication-quality wiring diagram.
-
----
-
 ## Repository Structure (Key Files)
 
 | File | Role |
